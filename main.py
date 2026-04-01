@@ -1,7 +1,7 @@
 import os
 import glob
 import google.generativeai as genai
-from tools import get_city_weather, read_pdf_content, read_code_files
+from tools import get_city_weather, read_pdf_content, read_code_files, search_weather_outfit
 from dotenv import load_dotenv
 
 def load_skill_prompt() -> str:
@@ -49,7 +49,7 @@ def main():
     # 注意: system_instruction 參數能在系統層級影響模型行為
     model_kwargs = {
         "model_name": 'gemini-2.5-flash',
-        "tools": [get_city_weather, read_pdf_content, read_code_files]
+        "tools": [get_city_weather, read_pdf_content, read_code_files, search_weather_outfit]
     }
     
     if system_instruction:
