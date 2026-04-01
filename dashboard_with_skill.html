@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Nexus - V2 Elite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* V2 Color Palette */
+            --bg-base: #030712;
+            --bg-surface: #111827;
+            --bg-surface-elevated: #1f2937;
+            
+            --primary: #3b82f6;
+            --primary-light: #60a5fa;
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            
+            --secondary: #ec4899;
+            --secondary-light: #f472b6;
+            --secondary-glow: rgba(236, 72, 153, 0.4);
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --text-high: #f9fafb;
+            --text-mid: #9ca3af;
+            --text-low: #4b5563;
+            
+            --border-light: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(255, 255, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-high);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+            /* Dynamic animated background */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%);
+            animation: bgShift 20s infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-light);
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--primary-glow);
+            position: relative;
+        }
+        .brand-icon::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: var(--bg-base);
+            border-radius: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            color: var(--text-mid);
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-item:hover, .nav-item.active {
+            color: var(--text-high);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent);
+            border-left: 3px solid var(--primary);
+        }
+
+        /* Main Workspace */
+        .workspace {
+            flex-grow: 1;
+            padding: 32px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--success);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Bento Grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+            grid-auto-rows: minmax(140px, auto);
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 100%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        .card:hover { border-color: var(--border-focus); transform: translateY(-3px); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+
+        .metric-card { grid-column: span 3; display: flex; flex-direction: column; justify-content: space-between; }
+        .chart-card { grid-column: span 6; grid-row: span 2; }
+        .terminal-card { grid-column: span 6; grid-row: span 2; display: flex; flex-direction: column;}
+        .tools-card { grid-column: span 12; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0; background: transparent; border: none; }
+
+        .card-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-mid);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .metric-value { font-size: 36px; font-weight: 800; margin-top: 12px; margin-bottom: 4px; }
+        .metric-sub { font-size: 13px; color: var(--success); font-weight: 500; display: flex; align-items:center; gap: 4px; }
+
+        /* Tools Mini Cards */
+        .tool-mini {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .tool-mini:hover { background: var(--bg-surface-elevated); transform: scale(1.02); }
+        .icon-box {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+
+        /* Graph representation */
+        .agent-graph {
+            height: 100%; display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        .brain-node {
+            width: 80px; height: 80px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 40px var(--primary-glow);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2;
+            animation: breathe 3s ease-in-out infinite alternate;
+        }
+        .satellite-node {
+            position: absolute;
+            width: 40px; height: 40px;
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-focus);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            z-index: 2;
+        }
+        .s-1 { top: 20%; left: 20%; }
+        .s-2 { bottom: 20%; left: 20%; }
+        .s-3 { top: 50%; right: 15%; margin-top:-20px; box-shadow: 0 0 20px var(--secondary-glow); border-color: var(--secondary); color: var(--secondary-light); }
+
+        .connection {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 45%; height: 2px;
+            background: linear-gradient(90deg, var(--primary-light), transparent);
+            transform-origin: left center;
+            opacity: 0.3;
+        }
+        .c-1 { transform: rotate(-145deg); }
+        .c-2 { transform: rotate(145deg); }
+        .c-3 { transform: rotate(0deg); width: 35%; background: linear-gradient(90deg, var(--primary-light), var(--secondary-light)); opacity: 0.8;}
+
+        @keyframes breathe {
+            0% { transform: scale(0.9); box-shadow: 0 0 20px var(--primary-glow); }
+            100% { transform: scale(1.1); box-shadow: 0 0 60px var(--primary); }
+        }
+
+        /* Premium Terminal */
+        .terminal {
+            flex-grow: 1;
+            margin-top: 16px;
+            background: #000;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #d1d5db;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .t-line { margin-bottom: 8px; opacity: 0; animation: typeIn 0.2s forwards; }
+        .t-prompt { color: var(--primary-light); margin-right: 8px;}
+        .t-cmd { color: #fff; }
+        .t-success { color: #34d399; }
+        .t-dim { color: #6b7280; }
+
+        @keyframes typeIn { to { opacity: 1; }}
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"></div>
+            NEXUS
+        </div>
+        <nav style="display:flex; flex-direction:column; gap:8px;">
+            <div class="nav-item active">● Dashboard</div>
+            <div class="nav-item">● Workflows</div>
+            <div class="nav-item">● Skills Library</div>
+            <div class="nav-item">● Memory Blocks</div>
+            <div class="nav-item">● Settings</div>
+        </nav>
+    </aside>
+
+    <main class="workspace">
+        <header class="header">
+            <div>
+                <h1 class="header-title">Agent Control Center</h1>
+                <p style="color: var(--text-mid); margin-top:4px;">Monitor system activities and cognitive cycles.</p>
+            </div>
+            <div class="status-pill">
+                <div class="status-dot"></div>
+                Agent System Online
+            </div>
+        </header>
+
+        <section class="bento-grid">
+            <!-- Metrics -->
+            <div class="card metric-card">
+                <div class="card-title">Compute Cycle</div>
+                <div>
+                    <div class="metric-value">0.84<span style="font-size:20px; color:var(--text-mid)">s</span></div>
+                    <div class="metric-sub">↑ 12% faster than v1</div>
+                </div>
+            </div>
+            
+            <div class="card metric-card">
+                <div class="card-title">Token Output Rate</div>
+                <div>
+                    <div class="metric-value">124<span style="font-size:20px; color:var(--text-mid)">t/s</span></div>
+                    <div class="metric-sub" style="color:var(--text-mid)">Gemini 2.5 Flash Pipeline</div>
+                </div>
+            </div>
+
+            <!-- Architecture Map (Visual) -->
+            <div class="card chart-card">
+                <div class="card-title">Neural Architecture Topology</div>
+                <div class="agent-graph">
+                    <!-- Connections -->
+                    <div class="connection c-1"></div>
+                    <div class="connection c-2"></div>
+                    <div class="connection c-3"></div>
+                    
+                    <!-- Nodes -->
+                    <div class="satellite-node s-1">🌤️</div>
+                    <div class="satellite-node s-2">📄</div>
+                    <div class="brain-node"><span style="font-size:32px">🧠</span></div>
+                    <div class="satellite-node s-3">💻</div>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="card terminal-card">
+                <div class="card-title">Console Output</div>
+                <div class="terminal" id="term">
+                    <!-- JS Lines -->
+                </div>
+            </div>
+
+            <!-- Tools Setup -->
+            <div class="tools-card">
+                <div class="tool-mini">
+                    <div class="icon-box">🌤️</div>
+                    <div>
+                        <div style="font-weight:700">Weather API</div>
+                        <div style="font-size: 13px; color:var(--text-mid)">wttr.in Endpoint</div>
+                    </div>
+                </div>
+                <div class="tool-mini">
+                    <div class="icon-box">📄</div>
+                    <div>
+                        <div style="font-weight:700">PDF Vision</div>
+                        <div style="font-size: 13px; color:var(--text-mid)">Local Document Reader</div>
+                    </div>
+                </div>
+                <div class="tool-mini" style="background: rgba(236, 72, 153, 0.05); border-color: rgba(236,72,153,0.2);">
+                    <div class="icon-box" style="background: rgba(236,72,153,0.1); color: var(--secondary)">✨</div>
+                    <div>
+                        <div style="font-weight:700; color:var(--secondary-light)">Code Review SKILL</div>
+                        <div style="font-size: 13px; color:var(--text-mid)">Active Override</div>
+                    </div>
+                </div>
+                <div class="tool-mini">
+                    <div class="icon-box">💻</div>
+                    <div>
+                        <div style="font-weight:700">Code Scanner</div>
+                        <div style="font-size: 13px; color:var(--text-mid)">Directory Parser</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        const terminalLogs = [
+            `> System Initialization...`,
+            `> <span class="t-success">✔</span> Connected to LLM core.`,
+            `> Loading SKILL module: <span style="color:var(--secondary-light)">Frontend Design Elite</span>`,
+            `> <span class="t-success">✔</span> Skill active. Personality & constraints injected.`,
+            `> User: <i>"Generate an AI Agent Architecture Dashboard."</i>`,
+            `> <span class="t-dim">Thinking... Applying [Frontend Design Elite] rules...</span>`,
+            `> Generating Glassmorphism syntax...`,
+            `> Assigning deep gradients and CSS animations...`,
+            `> <span class="t-success">✔</span> Action Complete: Dashboard generated successfully.`
+        ];
+        
+        const term = document.getElementById('term');
+        let index = 0;
+        
+        setInterval(() => {
+            if (index < terminalLogs.length) {
+                term.innerHTML += `<div class="t-line"><span class="t-prompt">nexus@agent:~$</span> ${terminalLogs[index]}</div>`;
+                term.scrollTop = term.scrollHeight;
+                index++;
+            }
+        }, 800);
+    </script>
+</body>
+</html>
