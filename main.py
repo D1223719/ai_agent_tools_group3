@@ -82,7 +82,7 @@ def main():
                 print("\n【System Instruction (Skill)】:")
                 print(system_instruction.strip())
             print(f"\n【User Message】: \n{user_input}")
-            print("="*50 + "\n")
+            print("="*50 + "\n") 
             
             # 獲取回應
             response = chat.send_message(user_input)
