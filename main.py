@@ -4,6 +4,8 @@ import google.generativeai as genai
 
 from dotenv import load_dotenv
 
+# 載入所有可用的工具函數
+from tools import get_city_weather, get_outfit_suggestion, search_travel_tips
 def load_skill_prompt() -> str:
     """讓使用者選擇並載入 skills 目錄下的技能 (System Prompt)"""
     skills_dir = "skills"
@@ -45,11 +47,14 @@ def main():
     # 1. 詢問並載入 Skill (System Prompt)
     system_instruction = load_skill_prompt()
 
+    # 定義可供 Agent 調用的工具清單
+    tools_list = [get_city_weather, get_outfit_suggestion, search_travel_tips]
+
     # 2. 建立模型實例並配置 tool 與 system instruction
     # 注意: system_instruction 參數能在系統層級影響模型行為
     model_kwargs = {
         "model_name": 'gemini-2.5-flash',
-
+        "tools": tools_list,
     }
     
     if system_instruction:
@@ -58,11 +63,11 @@ def main():
     model = genai.GenerativeModel(**model_kwargs)
 
     # 啟動對話 (使用 enable_automatic_function_calling=True)
-    print("======================================")
-    print("  Gemini 萬能 Agent 已啟動！")
-    print("  你可以問我天氣、讀取 PDF、幫你作 Code Review，或搜尋景點與旅遊注意事項。")
+    print("======================================================")
+    print("  Gemini 旅遊行前助理 (Travel Agent) 已啟動！")
+    print("  告訴我您的目的地與時間，我將幫您準備行前簡報，預報天氣與建議穿搭！")
     print("  輸入 'exit' 或 'quit' 來結束對話。")
-    print("======================================\n")
+    print("======================================================\n")
     
     chat = model.start_chat(enable_automatic_function_calling=True)
 

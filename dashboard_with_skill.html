@@ -40,7 +40,8 @@
             color: var(--text-high);
             min-height: 100vh;
             display: flex;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             /* Dynamic animated background */
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
@@ -189,9 +190,9 @@
         }
         .card:hover { border-color: var(--border-focus); transform: translateY(-3px); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
 
-        .metric-card { grid-column: span 3; display: flex; flex-direction: column; justify-content: space-between; }
-        .chart-card { grid-column: span 6; grid-row: span 2; }
-        .terminal-card { grid-column: span 6; grid-row: span 2; display: flex; flex-direction: column;}
+        .metric-card { display: none; } /* Removed unused metrics */
+        .chart-card { grid-column: span 6; grid-row: span 1; min-height: 250px;}
+        .terminal-card { grid-column: span 6; grid-row: span 1; display: flex; flex-direction: column; min-height: 250px;}
         .tools-card { grid-column: span 12; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0; background: transparent; border: none; }
 
         .card-title {
@@ -296,6 +297,110 @@
 
         @keyframes typeIn { to { opacity: 1; }}
 
+        /* View System */
+        .view-section {
+            display: none;
+            flex-direction: column;
+            gap: 32px;
+            animation: fadeIn 0.3s forwards;
+            flex-grow: 1;
+        }
+        .view-section.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Chatbox Styles */
+        .chatbox-card {
+            grid-column: span 6;
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+            padding: 0 !important; /* body has padding */
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            background: var(--bg-surface);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .chatbox-header {
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+        .chatbox-action {
+            background: none; border: none; color: var(--text-mid); font-size: 13px; cursor: pointer; transition: 0.2s;
+            text-decoration: underline;
+        }
+        .chatbox-action:hover { color: var(--text-high); }
+        .chatbox-body {
+            flex-grow: 1;
+            height: 350px;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            max-width: 85%;
+            line-height: 1.5;
+        }
+        .chat-message.bot {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #e5e7eb;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        .chat-message.user {
+            background: var(--primary);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .chatbox-input-area {
+            display: flex;
+            padding: 16px;
+            border-top: 1px solid var(--border-light);
+            gap: 8px;
+            background: var(--bg-surface);
+        }
+        #chat-input {
+            flex-grow: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-light);
+            padding: 10px 16px;
+            border-radius: 100px;
+            color: var(--text-high);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #chat-input:focus { border-color: var(--primary); }
+        .chat-send {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 100px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-send:hover { background: var(--primary-light); }
+
     </style>
 </head>
 <body>
@@ -306,19 +411,16 @@
             NEXUS
         </div>
         <nav style="display:flex; flex-direction:column; gap:8px;">
-            <div class="nav-item active">● Dashboard</div>
-            <div class="nav-item">● Workflows</div>
-            <div class="nav-item">● Skills Library</div>
-            <div class="nav-item">● Memory Blocks</div>
-            <div class="nav-item">● Settings</div>
+            <div class="nav-item active" onclick="switchView('dashboard')">● Dashboard</div>
+            <div class="nav-item" onclick="switchView('settings')">● Settings</div>
         </nav>
     </aside>
 
     <main class="workspace">
         <header class="header">
             <div>
-                <h1 class="header-title">Agent Control Center</h1>
-                <p style="color: var(--text-mid); margin-top:4px;">Monitor system activities and cognitive cycles.</p>
+                <h1 class="header-title">Travel Agent Nexus</h1>
+                <p style="color: var(--text-mid); margin-top:4px;">Monitor travel preparations, weather forecasting, and outfit generation.</p>
             </div>
             <div class="status-pill">
                 <div class="status-dot"></div>
@@ -326,23 +428,10 @@
             </div>
         </header>
 
-        <section class="bento-grid">
-            <!-- Metrics -->
-            <div class="card metric-card">
-                <div class="card-title">Compute Cycle</div>
-                <div>
-                    <div class="metric-value">0.84<span style="font-size:20px; color:var(--text-mid)">s</span></div>
-                    <div class="metric-sub">↑ 12% faster than v1</div>
-                </div>
-            </div>
-            
-            <div class="card metric-card">
-                <div class="card-title">Token Output Rate</div>
-                <div>
-                    <div class="metric-value">124<span style="font-size:20px; color:var(--text-mid)">t/s</span></div>
-                    <div class="metric-sub" style="color:var(--text-mid)">Gemini 2.5 Flash Pipeline</div>
-                </div>
-            </div>
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="view-section active">
+            <section class="bento-grid">
+
 
             <!-- Architecture Map (Visual) -->
             <div class="card chart-card">
@@ -355,9 +444,26 @@
                     
                     <!-- Nodes -->
                     <div class="satellite-node s-1">🌤️</div>
-                    <div class="satellite-node s-2">📄</div>
+                    <div class="satellite-node s-2">🌍</div>
                     <div class="brain-node"><span style="font-size:32px">🧠</span></div>
-                    <div class="satellite-node s-3">💻</div>
+                    <div class="satellite-node s-3">🎒</div>
+                </div>
+            </div>
+
+            <!-- Integrated Chatbox -->
+            <div class="chatbox-card">
+                <div class="chatbox-header" style="cursor: pointer;" onclick="switchChatMode('dashboard')" title="點擊重置為預設助理">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="status-dot"></div>
+                        <div id="chatbox-title">Travel Nexus Assistant</div>
+                    </div>
+                </div>
+                <div class="chatbox-body" id="chatbox-body">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+                <div class="chatbox-input-area">
+                    <input type="text" id="chat-input" placeholder="輸入條件 (例如:搜尋天氣)..." onkeypress="handleEnter(event)">
+                    <button class="chat-send" onclick="sendMessage()">發送</button>
                 </div>
             </div>
 
@@ -371,50 +477,77 @@
 
             <!-- Tools Setup -->
             <div class="tools-card">
-                <div class="tool-mini">
+                <div class="tool-mini" id="tool-card-weather" onclick="switchChatMode('weather')">
                     <div class="icon-box">🌤️</div>
                     <div>
                         <div style="font-weight:700">Weather API</div>
                         <div style="font-size: 13px; color:var(--text-mid)">wttr.in Endpoint</div>
                     </div>
                 </div>
-                <div class="tool-mini">
-                    <div class="icon-box">📄</div>
+                <div class="tool-mini" id="tool-card-briefing" onclick="switchChatMode('briefing')">
+                    <div class="icon-box">🌍</div>
                     <div>
-                        <div style="font-weight:700">PDF Vision</div>
-                        <div style="font-size: 13px; color:var(--text-mid)">Local Document Reader</div>
+                        <div style="font-weight:700">Trip Briefing SKILL</div>
+                        <div style="font-size: 13px; color:var(--text-mid)">System Prompt Override</div>
                     </div>
                 </div>
-                <div class="tool-mini" style="background: rgba(236, 72, 153, 0.05); border-color: rgba(236,72,153,0.2);">
-                    <div class="icon-box" style="background: rgba(236,72,153,0.1); color: var(--secondary)">✨</div>
+                <div class="tool-mini" id="tool-card-outfit" onclick="switchChatMode('outfit')">
+                    <div class="icon-box" style="background: rgba(236,72,153,0.1); color: var(--secondary)">🎒</div>
                     <div>
-                        <div style="font-weight:700; color:var(--secondary-light)">Code Review SKILL</div>
-                        <div style="font-size: 13px; color:var(--text-mid)">Active Override</div>
+                        <div style="font-weight:700; color:var(--secondary-light)">Outfit Advisor</div>
+                        <div style="font-size: 13px; color:var(--text-mid)">Clothing & Gear Tool</div>
                     </div>
                 </div>
-                <div class="tool-mini">
-                    <div class="icon-box">💻</div>
+                <div class="tool-mini" id="tool-card-search" onclick="switchChatMode('search')">
+                    <div class="icon-box">🔍</div>
                     <div>
-                        <div style="font-weight:700">Code Scanner</div>
-                        <div style="font-size: 13px; color:var(--text-mid)">Directory Parser</div>
+                        <div style="font-weight:700">Travel Search</div>
+                        <div style="font-size: 13px; color:var(--text-mid)">DuckDuckGo API</div>
                     </div>
                 </div>
             </div>
 
         </section>
+        </div> <!-- End Dashboard View -->
+
+        <!-- SETTINGS VIEW -->
+        <div id="view-settings" class="view-section">
+            <div class="card" style="max-width: 600px;">
+                <div class="card-title">Data Management</div>
+                <h2 style="margin: 16px 0;">History & Storage</h2>
+                <p style="color: var(--text-mid); margin-bottom: 24px;">管理所有助理模組的本機端歷史對話紀錄資料庫。</p>
+                
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Terminal Logs</span> <span style="color:var(--success)">Active</span>
+                    </div>
+                    <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Chat Storage (4 Nodes)</span> <span style="color:var(--success)">Healthy</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 16px;">
+                    <button class="chat-send" style="background:var(--secondary); padding: 12px 24px;" onclick="clearAllHistory()">清除所有對話紀錄</button>
+                </div>
+            </div>
+        </div> <!-- End Settings View -->
+
     </main>
+
+
 
     <script>
         const terminalLogs = [
             `> System Initialization...`,
-            `> <span class="t-success">✔</span> Connected to LLM core.`,
-            `> Loading SKILL module: <span style="color:var(--secondary-light)">Frontend Design Elite</span>`,
-            `> <span class="t-success">✔</span> Skill active. Personality & constraints injected.`,
-            `> User: <i>"Generate an AI Agent Architecture Dashboard."</i>`,
-            `> <span class="t-dim">Thinking... Applying [Frontend Design Elite] rules...</span>`,
-            `> Generating Glassmorphism syntax...`,
-            `> Assigning deep gradients and CSS animations...`,
-            `> <span class="t-success">✔</span> Action Complete: Dashboard generated successfully.`
+            `> <span class="t-success">✔</span> Connected to Gemini 2.5 core.`,
+            `> Loading SKILL module: <span style="color:var(--secondary-light)">Trip Briefing Agent</span>`,
+            `> <span class="t-success">✔</span> Skill active. Travel persona & constraints injected.`,
+            `> User: <i>"我要去東京三天兩夜，十二月出發"</i>`,
+            `> <span class="t-dim">Thinking... Applying [Trip Briefing] rules...</span>`,
+            `> Call Tool: get_city_weather("Tokyo")... <span class="t-success">Success</span>`,
+            `> Call Tool: get_outfit_suggestion("Snow", 2)... <span class="t-success">Success</span>`,
+            `> Generating pre-trip briefing...`,
+            `> <span class="t-success">✔</span> Action Complete: Trip Briefing generated successfully.`
         ];
         
         const term = document.getElementById('term');
@@ -427,6 +560,121 @@
                 index++;
             }
         }, 800);
+
+        // View Switching Logic
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            
+            const navItems = Array.from(document.querySelectorAll('.nav-item'));
+            const targetNav = navItems.find(nav => nav.textContent.toLowerCase().includes(viewName));
+            if (targetNav) targetNav.classList.add('active');
+        }
+
+        // Chatbox Mode Configuration
+        const chatModes = {
+            'dashboard': { key: 'v2_chat_main', title: 'Travel Nexus Assistant', prompt: '您好！我是您的整合式行前助理。您可以點擊下方模組來針對單一工具切換對話頻道！' },
+            'weather': { key: 'v2_chat_weather', title: 'Weather API 查天氣', prompt: '【天氣查詢頻道】請問您想查詢哪個城市的天氣？' },
+            'briefing': { key: 'v2_chat_briefing', title: 'Trip Briefing 行前簡報', prompt: '【行前簡報頻道】請告訴我目的地與出發日期，我將產出完整簡報。' },
+            'outfit': { key: 'v2_chat_outfit', title: 'Outfit Advisor 穿搭顧問', prompt: '【穿搭顧問頻道】請提供當地天氣或氣溫狀況，我將建議您要帶什麼裝備！' },
+            'search': { key: 'v2_chat_search', title: 'Travel Search 景點搜尋', prompt: '【景點搜尋頻道】需要尋找好玩的景點或旅遊注意事項嗎？' }
+        };
+        let currentMode = 'dashboard';
+
+        function switchChatMode(mode) {
+            currentMode = mode;
+            const config = chatModes[mode];
+            document.getElementById('chatbox-title').textContent = config.title;
+            
+            // Highlight selected tool card
+            document.querySelectorAll('.tool-mini').forEach(el => el.style.borderColor = 'var(--border-light)');
+            const activeCard = document.getElementById(`tool-card-${mode}`);
+            if (activeCard) activeCard.style.borderColor = 'var(--primary)';
+
+            loadChatHistory();
+        }
+
+        // Chatbox History Logic
+        function loadChatHistory() {
+            const body = document.getElementById('chatbox-body');
+            body.innerHTML = '';
+            
+            const config = chatModes[currentMode];
+            let history = JSON.parse(localStorage.getItem(config.key)) || [];
+            if (history.length === 0) {
+                history.push({role: 'bot', content: config.prompt});
+                localStorage.setItem(config.key, JSON.stringify(history));
+            }
+            
+            history.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `chat-message ${msg.role}`;
+                msgDiv.textContent = msg.content;
+                body.appendChild(msgDiv);
+            });
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function saveMessage(role, content) {
+            const config = chatModes[currentMode];
+            let history = JSON.parse(localStorage.getItem(config.key)) || [];
+            history.push({role, content});
+            localStorage.setItem(config.key, JSON.stringify(history));
+        }
+
+        function clearAllHistory() {
+            if(confirm("確定要清除所有頻道的對話紀錄嗎？")) {
+                Object.values(chatModes).forEach(cfg => localStorage.removeItem(cfg.key));
+                loadChatHistory();
+                alert("對話紀錄已成功清除！");
+            }
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const body = document.getElementById('chatbox-body');
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-message user';
+            userMsg.textContent = text;
+            body.appendChild(userMsg);
+            saveMessage('user', text);
+            
+            input.value = '';
+            body.scrollTop = body.scrollHeight;
+            
+            // Mock bot response (context aware)
+            setTimeout(() => {
+                let reply = `[${chatModes[currentMode].title}] 分析需求中，調用對應模組處理...`;
+                
+                // Add specific mocks for aesthetics
+                if (currentMode === 'weather') {
+                    reply = "查詢完成：" + text + " 的天氣是 18°C，多雲轉晴。";
+                } else if (currentMode === 'outfit') {
+                    reply = "收到您的情報！由於氣候偏涼，建議穿著長袖搭配一件具有防風功效的薄外套。";
+                }
+                
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chat-message bot';
+                botMsg.textContent = reply;
+                body.appendChild(botMsg);
+                saveMessage('bot', reply);
+                body.scrollTop = body.scrollHeight;
+            }, 800);
+        }
+
+        // Initialize Chat on Load
+        loadChatHistory();
     </script>
 </body>
 </html>
