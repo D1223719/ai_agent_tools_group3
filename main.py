@@ -1,7 +1,7 @@
 import os
 import glob
 import google.generativeai as genai
-from tools import get_city_weather, read_pdf_content, read_code_files, search_travel_tips
+
 from dotenv import load_dotenv
 
 def load_skill_prompt() -> str:
@@ -49,7 +49,7 @@ def main():
     # 注意: system_instruction 參數能在系統層級影響模型行為
     model_kwargs = {
         "model_name": 'gemini-2.5-flash',
-        "tools": [get_city_weather, read_pdf_content, read_code_files, search_travel_tips]
+
     }
     
     if system_instruction:
@@ -82,7 +82,7 @@ def main():
                 print("\n【System Instruction (Skill)】:")
                 print(system_instruction.strip())
             print(f"\n【User Message】: \n{user_input}")
-            print("="*50 + "\n")
+            print("="*50 + "\n") 
             
             # 獲取回應
             response = chat.send_message(user_input)
