@@ -1,7 +1,7 @@
 import os
 import glob
 import google.generativeai as genai
-from tools import get_city_weather, read_pdf_content, read_code_files
+from tools import get_city_weather, read_pdf_content, read_code_files, search_travel_tips
 from dotenv import load_dotenv
 
 def load_skill_prompt() -> str:
@@ -49,7 +49,7 @@ def main():
     # 注意: system_instruction 參數能在系統層級影響模型行為
     model_kwargs = {
         "model_name": 'gemini-2.5-flash',
-        "tools": [get_city_weather, read_pdf_content, read_code_files]
+        "tools": [get_city_weather, read_pdf_content, read_code_files, search_travel_tips]
     }
     
     if system_instruction:
@@ -60,7 +60,7 @@ def main():
     # 啟動對話 (使用 enable_automatic_function_calling=True)
     print("======================================")
     print("  Gemini 萬能 Agent 已啟動！")
-    print("  你可以問我天氣、讀取 PDF、或幫你作 Code Review。")
+    print("  你可以問我天氣、讀取 PDF、幫你作 Code Review，或搜尋景點與旅遊注意事項。")
     print("  輸入 'exit' 或 'quit' 來結束對話。")
     print("======================================\n")
     
